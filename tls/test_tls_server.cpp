@@ -4,10 +4,10 @@
 #include <stdio.h>
 
 #define PORTNUM 5001
-#define KEY_FNAME   "alex.key"
-#define CERT_FNAME  "alex.crt"
-#define CA_CERT_FNAME   "signing.pem"
-#define CLIENT_NAME     "yours.com"
+#define KEY_FNAME "alex.key"
+#define CERT_FNAME "alex.crt"
+#define CA_CERT_FNAME "signing.pem"
+#define CLIENT_NAME "Singapore_manu"
 
 
 // We are making an echo server. So we

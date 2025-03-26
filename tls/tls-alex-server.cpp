@@ -6,9 +6,7 @@
 #include "serial.h"
 #include "serialize.h"
 
-/* TODO: Set PORT_NAME to the port name of your Arduino */
 #define PORT_NAME			"/dev/ttyACM0"
-/* END TODO */
 
 // Check and ensure that this baud rate is the same
 // as what is used in Alex.ino
@@ -17,11 +15,10 @@
 // TLS Port Number
 #define SERVER_PORT			5001
 
-/* TODO: #define constants for the  filenames for Alex's private key, certificate, CA certificate name,
-        and the Common Name for your laptop */
-
-
-/* END TODO */
+#define KEY_FNAME "alex.key"
+#define CERT_FNAME "alex.crt"
+#define CA_CERT_FNAME "signing.pem"
+#define CLIENT_NAME "Singapore_manu"
 
 // Our network buffer consists of 1 byte of packet type, and 128 bytes of data
 #define BUF_LEN				129
@@ -196,7 +193,7 @@ void sendNetworkData(const char *data, int len)
             /* TODO: Implement SSL write here to write data to the network. Note that
               handleNetworkData should already have set tls_conn to point to the TLS
               connection we want to write to. */
-
+            c = sslWrite(tls_conn, data, len);
             /* END TODO */
 
         }
@@ -298,8 +295,7 @@ void *worker(void *conn)
 	while(networkActive)
 	{
 		/* TODO: Implement SSL read into buffer */
-
-
+        len = sslRead(conn, buffer, sizeof(buffer));
 		/* END TODO */
 		// As long as we are getting data, network is active
 		networkActive=(len > 0);
@@ -350,7 +346,7 @@ int main()
 
     /* TODO: Call createServer with the necessary parameters to do client authentication and to send
         Alex's certificate. Use the #define names you defined earlier  */
-
+    createServer(KEY_FNAME, CERT_FNAME, SERVER_PORT, &worker, CA_CERT_FNAME, CLIENT_NAME, 1);
     /* TODO END */
 
 	printf("DONE. Sending HELLO to Arduino\n");
