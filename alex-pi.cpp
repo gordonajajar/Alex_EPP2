@@ -166,10 +166,12 @@ void flushInput()
 
 void getParams(TPacket *commandPacket)
 {
-	printf("Enter distance/angle in cm/degrees (e.g. 50) and power in %% (e.g. 75) separated by space.\n");
-	printf("E.g. 50 75 means go at 50 cm at 75%% power for forward/backward, or 50 degrees left or right turn at 75%%  power\n");
-	scanf("%d %d", &commandPacket->params[0], &commandPacket->params[1]);
-	flushInput();
+	// printf("Enter distance/angle in cm/degrees (e.g. 50) and power in %% (e.g. 75) separated by space.\n");
+	// printf("E.g. 50 75 means go at 50 cm at 75%% power for forward/backward, or 50 degrees left or right turn at 75%%  power\n");
+	// scanf("%d %d", &commandPacket->params[0], &commandPacket->params[1]);
+	// flushInput();
+    commandPacket->params[0] = 9999;
+    commandPacket->params[1] = 80;
 }
 
 void sendCommand(char command)

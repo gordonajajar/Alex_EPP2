@@ -10,6 +10,17 @@
 #define ALEX_RADIUS 3
 #define PI 3.141592654
 
+//COLOR SENSOR
+#define  s0 40       //Module pins wiring
+#define s1 38
+#define s2 41
+#define s3 39
+#define  out 43
+int Red=0; int Green=0; int Blue=0;
+
+
+
+
 float alexDiagonal = 0.0;
 float alexCirc = 0.0;
 
@@ -61,6 +72,33 @@ volatile unsigned long newDist;
 unsigned long deltaTicks;
 unsigned long targetTicks;
 
+void openClaw() {
+  //TODO
+}
+void closeClaw() {
+  //TODO
+}
+void GetColor(){
+
+  for (int i = 0; i < 10; i += 1){
+    digitalWrite(s2, LOW); //S2/S3 levels define which set of photodiodes we are using LOW/LOW is for RED LOW/HIGH is for Blue and HIGH/HIGH is for green
+    digitalWrite(s3, LOW);
+    Red += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH); //here we wait until "out" go LOW, we start measuring the duration and stops when "out" is HIGH again, if you have trouble with this expression check the bottom of the code
+    delay(20);
+    digitalWrite(s3, HIGH); //Here we select the other color (set of photodiodes) and measure the other colors value using the same techinque
+    Blue += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+    delay(20);
+    digitalWrite(s2, HIGH);
+    Green += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+    delay(20);
+  }
+  Red /= 10;
+  Blue /= 10;
+  Green /= 10;
+  dbprintf("Red: %i, Green: %i, Blue: %i", Red, Green, Blue);
+
+   delay(20);
+}
 unsigned long computeDeltaTicks(float ang){
   unsigned long ticks = (unsigned long) ((ang * alexCirc * COUNTS_PER_REV) / (150.0 * WHEEL_CIRC));
   return ticks;
@@ -280,6 +318,17 @@ ISR(INT2_vect) //RIGHT ENCODER
   // dbprintf(rightTicks*WHEEL_CIRC/COUNTS_PER_REV);
 }
 
+void setupColor(){
+  pinMode(s0,OUTPUT);    //pin modes
+  pinMode(s1,OUTPUT);
+  pinMode(s2,OUTPUT);
+  pinMode(s3,OUTPUT);
+  pinMode(out,INPUT);
+
+  digitalWrite(s0,HIGH);  //Putting S0/S1 on HIGH/HIGH levels means the output frequency scalling is at 100%  (recommended)
+  digitalWrite(s1,HIGH); //LOW/LOW is off HIGH/LOW is 20% and  LOW/HIGH is  2%
+}
+
 // Set up the external interrupt pins INT2 and INT3
 // for falling edge triggered. Use bare-metal.
 void setupEINT()
@@ -391,6 +440,18 @@ void handleCommand(TPacket *command)
 {
   switch(command->command)
   {
+    case COMMAND_GET_COLOR:
+        sendOK();
+        GetColor();
+        break;
+    case COMMAND_OPEN:
+        sendOK();
+        openClaw();
+        break;
+    case COMMAND_CLOSE:
+        sendOK();
+        closeClaw();
+        break;
     // For movement commands, param[0] = distance, param[1] = speed.
     case COMMAND_FORWARD:
         sendOK();
@@ -477,6 +538,7 @@ void setup() {
   // put your setup code here, to run once:
 
   cli();
+  setupColor();
   setupEINT();
   setupSerial();
   startSerial();
@@ -505,6 +567,7 @@ void handlePacket(TPacket *packet)
       break;
 
     case PACKET_TYPE_HELLO:
+      sendOK();
       break;
   }
 }
