@@ -1,6 +1,9 @@
+#include <avr/io.h>
+
 #include <serialize.h>
 #include <stdarg.h>
 #include <math.h>
+#include <string.h>
 
 #include "packet.h"
 #include "constants.h"
@@ -16,10 +19,11 @@
 #define s2 41
 #define s3 39
 #define  out 43
+
+#define TRIG_PIN PC2  // Define trigger pin
+#define ECHO_PIN PC4  // Define echo pins
+                      
 int Red=0; int Green=0; int Blue=0;
-
-
-
 
 float alexDiagonal = 0.0;
 float alexCirc = 0.0;
@@ -72,33 +76,119 @@ volatile unsigned long newDist;
 unsigned long deltaTicks;
 unsigned long targetTicks;
 
+
+// Map 0–180° to OCR2B values (for ~1ms to ~2ms pulse)
+uint8_t angleToOCR(uint8_t angle) {
+  return (angle * (250 - 125)) / 180 + 125;
+}
+
 void openClaw() {
-  //TODO
+  for (int angle = 180; angle >= 0; angle -= 10) {
+    OCR2B = angleToOCR(angle);
+    _delay_ms(10); // small delay between steps
+  }
+  for (int angle = 0; angle <= 180; angle += 10) {
+    OCR2A = angleToOCR(angle);
+    _delay_ms(10); // small delay between steps
+  }
 }
 void closeClaw() {
-  //TODO
+  for (int angle = 0; angle <= 180; angle += 10) {
+    OCR2B = angleToOCR(angle);
+    _delay_ms(10); // small delay between steps
+  }
+  for (int angle = 180; angle >= 0; angle -= 10) {
+    OCR2A = angleToOCR(angle);
+    _delay_ms(10); // small delay between steps
+  }
 }
-void GetColor(){
 
-  for (int i = 0; i < 10; i += 1){
-    digitalWrite(s2, LOW); //S2/S3 levels define which set of photodiodes we are using LOW/LOW is for RED LOW/HIGH is for Blue and HIGH/HIGH is for green
+int GetDist(){
+  PORTC &= ~(1 << TRIG_PIN);
+  _delay_us(2);
+  PORTC |= (1 << TRIG_PIN);
+  _delay_us(10);
+  PORTC &= ~(1 << TRIG_PIN);
+
+  // Measure pulse width
+  while (!(PINC & (1 << ECHO_PIN))); // Wait for HIGH
+  int count = 0;
+  while (PINC & (1 << ECHO_PIN)) {
+    _delay_us(1);
+    count++;
+    if (count > 2000){
+      return -1;
+    }
+  }
+  return count/58;
+
+}
+
+char* GetColor() {
+
+    digitalWrite(s2, LOW);
     digitalWrite(s3, LOW);
-    Red += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH); //here we wait until "out" go LOW, we start measuring the duration and stops when "out" is HIGH again, if you have trouble with this expression check the bottom of the code
+    Red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
     delay(20);
-    digitalWrite(s3, HIGH); //Here we select the other color (set of photodiodes) and measure the other colors value using the same techinque
-    Blue += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+    digitalWrite(s3, HIGH);
+    Blue = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
     delay(20);
     digitalWrite(s2, HIGH);
-    Green += pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+    Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
     delay(20);
-  }
-  Red /= 10;
-  Blue /= 10;
-  Green /= 10;
-  dbprintf("Red: %i, Green: %i, Blue: %i", Red, Green, Blue);
 
-   delay(20);
+    // Find the dominant (minimum) color
+    char* dominant;
+    if (Red <= Green && Red <= Blue) {
+        dominant = "R";
+    } else if (Green <= Red && Green <= Blue) {
+        dominant = "G";
+    } else {
+        dominant = "B";
+    }
+    dbprintf("Red:%d, Green:%d, Blue:%d (%s)", Red, Green, Blue, dominant);
 }
+
+
+void GetUltra(){ 
+  // Trigger pulse
+
+  int toofar = 0;
+  int ans[5];
+  for (int i = 0; i < 10; i += 1){
+    if (toofar > 3){
+      dbprintf("Too far");
+      return;
+    }
+    ans[i] = GetDist();
+    if (ans[i] == -1){
+      toofar += 1;
+    }
+  }
+  dbprintf("Distances: %i, %i, %i, %i, %i, %i, %i, %i, %i, %i", ans[0], ans[1], ans[2], ans[3], ans[4], ans[5], ans[6], ans[7], ans[8], ans[9]);
+
+}
+
+// void getAvgUltra(){
+//   int n = 0;
+//   float sum = 0;
+//   int toofar = 0;
+//   while (n != 10){
+//     if (toofar == 3){
+//       Serial.println("too far");
+//       return;
+//     }
+//     float val = GetUltra();
+//     if (val == -1){
+//       toofar += 1;
+//     } else{
+//       sum += val;
+//       n += 1;
+//     }
+//   }
+//   Serial.println(sum/10.0);
+// }
+
 unsigned long computeDeltaTicks(float ang){
   unsigned long ticks = (unsigned long) ((ang * alexCirc * COUNTS_PER_REV) / (150.0 * WHEEL_CIRC));
   return ticks;
@@ -318,6 +408,19 @@ ISR(INT2_vect) //RIGHT ENCODER
   // dbprintf(rightTicks*WHEEL_CIRC/COUNTS_PER_REV);
 }
 
+void setupUltra(){
+  DDRC |= (1 << TRIG_PIN);  // Set TRIG_PIN as output
+  DDRC &= ~(1 << ECHO_PIN); // Set ECHO_PIN as input
+}
+
+void setupServo(){
+  DDRH |= (1 << PH6);
+  DDRB |= (1 << PB4);
+
+  TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM20);  // Non-inverting PWM on OC2B
+  TCCR2B = (1 << CS22);                   // Prescaler = 64
+}
+
 void setupColor(){
   pinMode(s0,OUTPUT);    //pin modes
   pinMode(s1,OUTPUT);
@@ -444,6 +547,10 @@ void handleCommand(TPacket *command)
         sendOK();
         GetColor();
         break;
+    case COMMAND_GET_DIST:
+        sendOK();
+        GetUltra();
+        break;
     case COMMAND_OPEN:
         sendOK();
         openClaw();
@@ -544,6 +651,8 @@ void setup() {
   startSerial();
   enablePullups();
   initializeState();
+  setupServo();
+  setupUltra();
   sei();
   alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
   alexCirc = PI * alexDiagonal;
@@ -577,13 +686,13 @@ void loop() {
 
  //forward(0, 100);
 
-// Uncomment the code below for Week 9 Studio 2
+// Uncomment the code below for Week 9 Studio 25
 
  // put your main code here, to run repeatedly:
   TPacket recvPacket; // This holds commands from the Pi
-
+  
   TResult result = readPacket(&recvPacket);
-
+  
   if(result == PACKET_OK)
     handlePacket(&recvPacket);
   else if(result == PACKET_BAD) {
@@ -592,7 +701,7 @@ void loop() {
   else if(result == PACKET_CHECKSUM_BAD){
     sendBadChecksum();
   } 
-
+  
   if(deltaDist > 0)
   {
     if(dir==FORWARD){
@@ -616,7 +725,7 @@ void loop() {
       stop();
     }
   }
-
+  
   if (deltaTicks > 0){
     if(dir==LEFT){
       if(leftReverseTicksTurns >= targetTicks){

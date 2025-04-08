@@ -10,7 +10,7 @@ from pubsub.pub_sub_manager import publish, subscribe, unsubscribe, getMessages,
 
 # Import the required lidar modules
 from lidar.alex_lidar import   lidarConnect, lidarDisconnect, process_scan, resampleLidarScan
-
+#from redis_utils import r_publish
 
 # Constants
 PORT = "/dev/ttyUSB0"   # Linux
@@ -77,7 +77,7 @@ def lidarScanThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
                 break
         except Exception as e:
             pass
-
+    
     if not scan_mode_info:
         # Failed to connect to Lidar, trigger system to shut down
         print("Failed to connect to Lidar")
@@ -116,10 +116,12 @@ def lidarScanThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
                 for i  in range(len(ang)):
                     if quality[i] > QUALITY_THRESHOLD:
                         filtered_ang.append(ang[i])
-                        fitered_dist.append(dist[i])
+                        filtered_dist.append(dist[i])
                         filtered_quality.append(quality[i])
 
-                publish(LIDAR_SCAN_TOPIC, (tuple(filtered_ang), tuple(filtered_dist), tuple(filtered_quality)))
+                payload = (tuple(filtered_ang), tuple(filtered_dist), tuple(filtered_quality))
+                publish(LIDAR_SCAN_TOPIC, payload)
+                #r_publish(LIDAR_SCAN_TOPIC, payload)
 
             if ctx.isExit():
                 break

@@ -16,8 +16,11 @@ from control.alex_control_constants import TResponseType
 from networking.sslServer import sendNetworkData
 from networking.constants import TNetType
 
+#from redis_utils import r_subscribe, msgpack, zlib
+
 # Constants
-ARDUINO_RECV_TOPIC = "arduino/recv"
+TOPICS = ["arduino/recv", "lidar/scan"]
+LIDAR_TOPIC = ["lidar/scan"]
 
 def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
     """
@@ -47,8 +50,10 @@ def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
     setupBarrier.wait() if readyBarrier != None else None
 
     # Subscribe to the "arduino/recv" topic
-    subscribe(topic=ARDUINO_RECV_TOPIC, ensureReply=True, replyTimeout=1)
-    print(f"TLS Send Thread Ready. Will send messages from {ARDUINO_RECV_TOPIC} over the TLS connection")
+    #ps = r_subscribe(LIDAR_TOPIC)
+    for topic in TOPICS:
+        subscribe(topic=topic, ensureReply=True, replyTimeout=1)
+    print(f"TLS Send Thread Ready. Will send messages from {ARDUINO_RECV_TOPIC} over the TLSi connection")
 
     # Wait for all Threads ready
     readyBarrier.wait() if readyBarrier != None else None
@@ -58,12 +63,25 @@ def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
         while (not ctx.isExit()):
             # handle messages
             messages = getMessages(block=True, timeout=1)
+            #ps_message = ps.listen()
             if messages:
                 for m in messages:
                     # Extract the payload from the message
+                    topic = PubSubMsg.getTopic(m)
                     payload = PubSubMsg.getPayload(m)
                     # will silently fail to send if not connected
-                    handle_arduinopacket(payload)
+                    if topic == "arduino/recv":
+                        handle_arduinopacket(payload)
+                    elif topic == "lidar/scan":    
+                        handle_lidarpacket(payload)
+ 
+            '''if ps_message:
+                for m in messages:
+                    topic = m["channel"].decode()
+                    raw = m["data"]
+                    payload = msgpack.unpackb(raw, raw=False)
+                    if topic == "lidar/scan":
+                        sendNetworkData(encode_lidar_packet(payload))'''
             pass
     except KeyboardInterrupt:
         pass
@@ -136,4 +154,15 @@ def handle_arduinopacket(packet_tuple:tuple):
     else:
         print(f"Unknown Packet Type {packet_type} for Network Send")
 
+def handle_lidarpacket(packet_tuple: tuple):
+    data = bytearray(1+100)
+    data[0] = TNetType.NET_LIDAR_PACKET.value
 
+    payload_str = f"{packet_tuple}"
+    encoded = payload_str.encode('utf_8')
+
+    data[1:1+min(len(encoded), 100)] = encoded[:100]
+
+    print("Sending Lidar Data")
+
+    sendNetworkData(data)

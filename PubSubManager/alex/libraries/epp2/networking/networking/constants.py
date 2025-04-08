@@ -23,4 +23,5 @@ class TNetType(enum.Enum):
     NET_STATUS_PACKET = 1
     NET_MESSAGE_PACKET = 2
     NET_COMMAND_PACKET = 3
+    NET_LIDAR_PACKET = 4
 

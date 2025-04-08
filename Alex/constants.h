@@ -43,7 +43,8 @@ typedef enum
   COMMAND_CLEAR_STATS = 6,
   COMMAND_GET_COLOR = 7,
   COMMAND_OPEN = 8,
-  COMMAND_CLOSE = 9
+  COMMAND_CLOSE = 9,
+  COMMAND_GET_DIST = 10
 } TCommandType;
 
 typedef enum
