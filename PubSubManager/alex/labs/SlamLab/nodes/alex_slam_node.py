@@ -25,11 +25,11 @@ MIN_SAMPLES_FOR_SLAM_UPDATE = 200
 
 
 # Map Constants
-MAP_QUALITY = 5
+MAP_QUALITY = 25
 MAP_SIZE_PIXELS = 500
-MAP_SIZE_METERS = 8
+MAP_SIZE_METERS = 10 
 MAP_SIZE_MILLIMETERS = MAP_SIZE_METERS * 1000
-LIDAR_OFFSET_DEGREES = -90 # in case your lidar 'Front' (i.e. 0 degrees) is not aligned with the robot 
+LIDAR_OFFSET_DEGREES = 0 # in case your lidar 'Front' (i.e. 0 degrees) is not aligned with the robot 
 
 LIDAR_SCAN_TOPIC = "lidar/scan"
 SLAM_MAPPOSE_TOPIC = "slam/mappose"

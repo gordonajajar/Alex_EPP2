@@ -93,11 +93,11 @@ from nodes.alex_lidar_scan_node import lidarScanThread
 from nodes.alex_slam_node import slamThread
 
 # LIDAR DISPLAY NODE
-from nodes.alex_display_node import lidarDisplayProcess
+# from nodes.alex_display_node import lidarDisplayProcess
 
 # Alternative display backend! Try it out if you dare
 # Requires Bokeh. pip install bokeh
-# from nodes.alex_bokeh_display_node import lidarDisplayProcess
+from nodes.alex_bokeh_display_node import lidarDisplayProcess
 
 # TLS RELAY NODES
 from nodes.alex_TLSRelay_recv_node import TLSRecvThread
