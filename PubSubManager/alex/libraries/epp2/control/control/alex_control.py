@@ -199,7 +199,7 @@ def parseUserInput(input_str:str, exitFlag:Event = _EXIT_EVENT):
         commandType = TCommandType.COMMAND_GET_COLOR
         params = parseParams(split_input[1:], 0, None)
         return  (packetType, commandType,  params)
-    elif command == "d":
+    elif command == "u":
         commandType = TCommandType.COMMAND_GET_DIST
         params = parseParams(split_input[1:], 0, None)
         return (packetType, commandType, params)
@@ -211,27 +211,27 @@ def parseUserInput(input_str:str, exitFlag:Event = _EXIT_EVENT):
         commandType = TCommandType.COMMAND_CLOSE
         params = parseParams(split_input[1:], 0 , None)
         return (packetType, commandType, params)
-    elif command == "f":
+    elif command == "w":
         commandType = TCommandType.COMMAND_FORWARD
         params = parseParams(split_input[1:], 2, 
                              "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
-    elif command== "b":
+    elif command== "s":
         commandType = TCommandType.COMMAND_REVERSE
         params = parseParams(split_input[1:], 2, 
                              "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
-    elif command == "l":
+    elif command == "a":
         commandType = TCommandType.COMMAND_TURN_LEFT
         params = parseParams(split_input[1:], 2, 
                              "Enter degrees to turn left (e.g. 90) and power in % (e.g. 75) separated by space.\n")
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
-    elif command == "r":
+    elif command == "d":
         commandType = TCommandType.COMMAND_TURN_RIGHT
         params = parseParams(split_input[1:], 2, 
                              "Enter degrees to turn right (e.g. 90) and power in % (e.g. 75) separated by space.\n")
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
-    elif command == "s":
+    elif command == "q":
         commandType = TCommandType.COMMAND_STOP
         params = parseParams(split_input[1:], 0, None)
         return (packetType, commandType,  params)
@@ -243,7 +243,7 @@ def parseUserInput(input_str:str, exitFlag:Event = _EXIT_EVENT):
         commandType = TCommandType.COMMAND_GET_STATS
         params = parseParams(split_input[1:], 0, None)
         return  (packetType, commandType,  params)
-    elif command == "q":
+    elif command == "v":
         print("Exiting! Setting Exit Flag...")
         print("\n==============CLEANING UP==============")
         exitFlag.set()

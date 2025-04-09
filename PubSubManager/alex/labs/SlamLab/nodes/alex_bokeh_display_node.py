@@ -51,8 +51,8 @@ LIDAR_OFFSET_DEGREES = 0 # should match whatever is set in the SLAM node
 LIDAR_OFFSET_RADIANS = np.deg2rad(LIDAR_OFFSET_DEGREES)
 
 # SLAM and MAP constants
-MAP_SIZE_PIXELS = 500
-MAP_SIZE_METERS = 10 
+MAP_SIZE_PIXELS = 400
+MAP_SIZE_METERS = 4 
 MAP_SIZE_MILLIMETERS = MAP_SIZE_METERS * 1000
 ROBOT_WIDTH_METERS = 0.2 
 ROBOT_HEIGHT_METERS = 0.4
@@ -62,7 +62,7 @@ ROBOT_HALF_WIDTH_MM = ROBOT_WIDTH_METERS * 1000 / 2
 ROBOT_HALF_DIAGONAL = np.sqrt(ROBOT_HALF_HEIGHT_MM**2 + ROBOT_HALF_WIDTH_MM**2)
 
 IMAGE_MAP_DOWNSCALE_FACTOR = 1 # Downscale the image by this factor for display purposes
-SLAM_MAP_GUI_UPDATE_INTERVAL = 0.25 # seconds, minimum time between updates to the SLAM map image
+SLAM_MAP_GUI_UPDATE_INTERVAL = 0.15 # seconds, minimum time between updates to the SLAM map image
 
 
 

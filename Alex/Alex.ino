@@ -103,7 +103,7 @@ void closeClaw() {
   }
 }
 
-int GetDist(){
+float GetDist(){
   PORTC &= ~(1 << TRIG_PIN);
   _delay_us(2);
   PORTC |= (1 << TRIG_PIN);
@@ -120,11 +120,11 @@ int GetDist(){
       return -1;
     }
   }
-  return count/58;
+  return count/58.0;
 
 }
 
-char* GetColor() {
+unsigned long* GetColor() {
 
     digitalWrite(s2, LOW);
     digitalWrite(s3, LOW);
@@ -137,16 +137,11 @@ char* GetColor() {
     Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
     delay(20);
 
-    // Find the dominant (minimum) color
-    char* dominant;
-    if (Red <= Green && Red <= Blue) {
-        dominant = "R";
-    } else if (Green <= Red && Green <= Blue) {
-        dominant = "G";
-    } else {
-        dominant = "B";
-    }
-    dbprintf("Red:%d, Green:%d, Blue:%d (%s)", Red, Green, Blue, dominant);
+    long arr[3];
+    arr[0] = Red;
+    arr[1] = Green;
+    arr[2] = Blue;
+    return arr;
 }
 
 
@@ -239,6 +234,31 @@ TResult readPacket(TPacket *packet)
     
 }
 
+// void sendColorDist()
+// {
+//   // Implement code to send back a packet containing key
+//   // information like leftTicks, rightTicks, leftRevs, rightRevs
+//   // forwardDist and reverseDist
+//   // Use the params array to store this information, and set the
+//   // packetType and command files accordingly, then use sendResponse
+//   // to send out the packet. See sendMessage on how to use sendResponse.
+//   TPacket statusPacket;
+//   statusPacket.packetType = PACKET_TYPE_RESPONSE;
+//   statusPacket.command = RESP_STATUS;
+//   statusPacket.data = 
+//   statusPacket.params[0] = leftForwardTicks;
+//   statusPacket.params[1] = rightForwardTicks;
+//   statusPacket.params[2] = leftReverseTicks;
+//   statusPacket.params[3] = rightReverseTicks;
+//   statusPacket.params[4] = leftForwardTicksTurns;
+//   statusPacket.params[5] = rightForwardTicksTurns;
+//   statusPacket.params[6] = leftReverseTicksTurns;
+//   statusPacket.params[7] = rightReverseTicksTurns;
+//   statusPacket.params[8] = forwardDist;
+//   statusPacket.params[9] = reverseDist;
+//
+//   sendResponse(&statusPacket);
+// }
 void sendStatus()
 {
   // Implement code to send back a packet containing key
@@ -250,17 +270,20 @@ void sendStatus()
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
-  statusPacket.params[0] = leftForwardTicks;
-  statusPacket.params[1] = rightForwardTicks;
-  statusPacket.params[2] = leftReverseTicks;
-  statusPacket.params[3] = rightReverseTicks;
-  statusPacket.params[4] = leftForwardTicksTurns;
-  statusPacket.params[5] = rightForwardTicksTurns;
-  statusPacket.params[6] = leftReverseTicksTurns;
-  statusPacket.params[7] = rightReverseTicksTurns;
-  statusPacket.params[8] = forwardDist;
-  statusPacket.params[9] = reverseDist;
+  long* arr = GetColor();
+  statusPacket.params[0] = arr[0];
+  statusPacket.params[1] = arr[1];
+  statusPacket.params[2] = arr[2];
 
+  //GetDist() returns -1 if too far. FLOAT
+  int toofar = 0;
+  for (int i = 3; i < 13; i += 2){ //3,5,7,9,11
+    float dist = GetDist();
+    unsigned long left = (unsigned long) dist;
+    unsigned long right = (unsigned long) (dist*100)%100;
+    statusPacket.params[i] = left;
+    statusPacket.params[i+1] = right;
+  }
   sendResponse(&statusPacket);
 }
 
