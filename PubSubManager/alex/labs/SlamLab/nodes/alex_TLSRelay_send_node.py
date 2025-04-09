@@ -20,7 +20,7 @@ from networking.constants import TNetType
 
 # Constants
 TOPICS = ["arduino/recv", "lidar/scan"]
-LIDAR_TOPIC = ["lidar/scan"]
+ARDUINO_RECV_TOPIC = "lidar/scan"
 
 def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
     """
@@ -51,8 +51,9 @@ def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
 
     # Subscribe to the "arduino/recv" topic
     #ps = r_subscribe(LIDAR_TOPIC)
-    for topic in TOPICS:
-        subscribe(topic=topic, ensureReply=True, replyTimeout=1)
+    '''for topic in TOPICS:
+        subscribe(topic=topic, ensureReply=True, replyTimeout=1)'''
+    subscribe(topic=ARDUINO_RECV_TOPIC, ensureReply=True, replyTimeout=1)
     print(f"TLS Send Thread Ready. Will send messages from {ARDUINO_RECV_TOPIC} over the TLSi connection")
 
     # Wait for all Threads ready
@@ -67,13 +68,12 @@ def TLSSendThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
             if messages:
                 for m in messages:
                     # Extract the payload from the message
-                    topic = PubSubMsg.getTopic(m)
+                    #topic = PubSubMsg.getTopic(m)
                     payload = PubSubMsg.getPayload(m)
                     # will silently fail to send if not connected
-                    if topic == "arduino/recv":
-                        handle_arduinopacket(payload)
-                    elif topic == "lidar/scan":    
-                        handle_lidarpacket(payload)
+                    handle_arduinopacket(payload)
+                    '''elif topic == "lidar/scan":    
+                        handle_lidarpacket(payload)'''
  
             '''if ps_message:
                 for m in messages:

@@ -48,7 +48,7 @@ def cliThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
     # User Interaction Loop
     try:
         while(not ctx.isExit()):
-            input_str = input("Command (p=color, d=dist, i=open, o=close, f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats q=exit)\n")
+            input_str = input("Command (p=color, d=dist, o=open, i=close, w=forward, s=reverse, a=turn left, d=turn right, q=stop, c=clear stats, g=get stats v=exit)\n")
             parseResult = parseUserInput(input_str, exitFlag=ctx.exitEvent)
             # if the parse result is None then the user entered an invalid command
             if parseResult == None:

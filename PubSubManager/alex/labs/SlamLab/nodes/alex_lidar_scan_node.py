@@ -10,7 +10,6 @@ from pubsub.pub_sub_manager import publish, subscribe, unsubscribe, getMessages,
 
 # Import the required lidar modules
 from lidar.alex_lidar import   lidarConnect, lidarDisconnect, process_scan, resampleLidarScan
-#from redis_utils import r_publish
 
 # Constants
 PORT = "/dev/ttyUSB0"   # Linux
@@ -121,7 +120,6 @@ def lidarScanThread(setupBarrier:Barrier=None, readyBarrier:Barrier=None):
 
                 payload = (tuple(filtered_ang), tuple(filtered_dist), tuple(filtered_quality))
                 publish(LIDAR_SCAN_TOPIC, payload)
-                #r_publish(LIDAR_SCAN_TOPIC, payload)
 
             if ctx.isExit():
                 break
