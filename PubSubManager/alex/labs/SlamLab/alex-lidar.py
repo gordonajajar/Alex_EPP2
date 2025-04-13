@@ -65,13 +65,13 @@ FAILED_ATTEMPT_WAIT_SEC = 5
 
 
 # NODE FLAGS
-ENABLE_DEBUG_MESSAGE_MONITOR = True
-ENABLE_LIDAR_NODE = False
-ENABLE_SLAM_NODE = False
-ENABLE_GUI_NODE = False
-ENABLE_CLI_NODE = True
+ENABLE_DEBUG_MESSAGE_MONITOR = False
+ENABLE_LIDAR_NODE = True
+ENABLE_SLAM_NODE = True
+ENABLE_GUI_NODE = True
+ENABLE_CLI_NODE = False
 ENABLE_TLS_SERVER = False
-ENABLE_ARDUNIO_INTERFACE = True
+ENABLE_ARDUNIO_INTERFACE = False
 
 DEBUG_MONITOR_TOPICS = [""]
 
@@ -86,7 +86,7 @@ from nodes.alex_arduino_receive_node import receiveThread
 from nodes.alex_arduino_send_node import sendThread
 
 # CLI COMMAND NODE
-from nodes.alex_cli_node_test import cliThread
+from nodes.alex_cli_node import cliThread
 
 # LIDAR and SLAM NODES
 from nodes.alex_lidar_scan_node import lidarScanThread

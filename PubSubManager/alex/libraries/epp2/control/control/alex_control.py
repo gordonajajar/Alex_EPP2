@@ -22,6 +22,7 @@ from .alex_control_serialize import serialize, deserialize
 from .alex_control_constants import TCommandType, TPacketType, TResponseType, TPacket, PAYLOAD_PARAMS_COUNT, PAYLOAD_PACKET_SIZE
 from .alex_control_constants import TComms, TResultType, COMMS_MAGIC_NUMBER, COMMS_PACKET_SIZE
 
+POWER = 80
 
 # This default event is used to signal that the program should exit
 # Pass your own event to the parseUserInput() and receivePacket() functions if you want to control the exit behavior
@@ -213,23 +214,27 @@ def parseUserInput(input_str:str, exitFlag:Event = _EXIT_EVENT):
         return (packetType, commandType, params)
     elif command == "w":
         commandType = TCommandType.COMMAND_FORWARD
-        params = parseParams(split_input[1:], 2, 
-                             "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
+        #params = parseParams(split_input[1:], 2, 
+                        #     "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
+        params = [15000, POWER]
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
     elif command== "s":
         commandType = TCommandType.COMMAND_REVERSE
-        params = parseParams(split_input[1:], 2, 
-                             "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
+        #params = parseParams(split_input[1:], 2, 
+                      #       "Enter distance in cm (e.g. 50) and power in % (e.g. 75) separated by space.\n")
+        params = [15000, POWER]
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
     elif command == "a":
         commandType = TCommandType.COMMAND_TURN_LEFT
-        params = parseParams(split_input[1:], 2, 
-                             "Enter degrees to turn left (e.g. 90) and power in % (e.g. 75) separated by space.\n")
+        #params = parseParams(split_input[1:], 2, 
+                      #       "Enter degrees to turn left (e.g. 90) and power in % (e.g. 75) separated by space.\n")
+        params = [15000, POWER]
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
     elif command == "d":
         commandType = TCommandType.COMMAND_TURN_RIGHT
-        params = parseParams(split_input[1:], 2, 
-                             "Enter degrees to turn right (e.g. 90) and power in % (e.g. 75) separated by space.\n")
+        #params = parseParams(split_input[1:], 2, 
+                      #       "Enter degrees to turn right (e.g. 90) and power in % (e.g. 75) separated by space.\n")
+        params = [15000, POWER]
         return (packetType, commandType,  params) if params != None else print("Invalid Parameters")
     elif command == "q":
         commandType = TCommandType.COMMAND_STOP

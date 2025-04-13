@@ -93,12 +93,12 @@ void openClaw() {
   }
 }
 void closeClaw() {
-  for (int angle = 0; angle <= 180; angle += 10) {
-    OCR2B = angleToOCR(angle);
-    _delay_ms(10); // small delay between steps
-  }
   for (int angle = 180; angle >= 0; angle -= 10) {
     OCR2A = angleToOCR(angle);
+    _delay_ms(10); // small delay between steps
+  }
+  for (int angle = 0; angle <= 180; angle += 10) {
+    OCR2B = angleToOCR(angle);
     _delay_ms(10); // small delay between steps
   }
 }
@@ -137,11 +137,12 @@ unsigned long* GetColor() {
     Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
     delay(20);
 
-    long arr[3];
-    arr[0] = Red;
-    arr[1] = Green;
-    arr[2] = Blue;
-    return arr;
+    dbprintf("Red: %i, Green, %i, Blue, %i", Red, Green, Blue);
+    // long arr[3];
+    // arr[0] = Red;
+    // arr[1] = Green;
+    // arr[2] = Blue;
+    // return arr;
 }
 
 
